@@ -4,6 +4,7 @@ import * as path from "path"
 import * as fs from "fs"
 import { InvalidInput } from "../../../../utilities/customError"
 import { UploadedFile } from "express-fileupload"
+import { Roles } from "../../../../db/models/user"
 
 export interface IUnauthenticatedRequests
   extends Omit<Request, "query" | "params" | "files"> {
@@ -46,20 +47,29 @@ export const verify = (token: string) => {
   }
 }
 
-export const authenticate = () => async (
+export const authenticate = (roles?: Roles[], isUserId?: boolean) => async (
   req: IAuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const token = (req.get("authorization") || "").replace(/Bearer /, "")
+    console.log(token);
     if (!token) {
       throw new InvalidInput("Unauthorized access", 401)
     }
+    console.log("after",token);
     let decoded: any = await jwt.verify(token, publicKey, OPTIONS)
+    
+    if (roles && roles.indexOf(decoded.role) === -1) {
+      console.log("inside role",token);
+      throw new InvalidInput("Unauthorized access", 401)
+    }
 
-    req.user = decoded.user
-
+    if (isUserId && decoded.userId !== req.params.userId) {
+      console.log("inside user",token);
+      throw new InvalidInput("Invalid User access", 401)
+    } 
     next()
   } catch (err) {
     res.status(401).send({

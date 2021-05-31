@@ -6,6 +6,7 @@ import {
   joi400Resp,
 } from "../middleware/validate/joi.middleware"
 import user from "../../../db/models/user"
+import { objectIdRegex } from "../../../constants"
 
 export interface ILoginReq extends IAuthenticatedRequest {
   body: {
@@ -146,16 +147,20 @@ export const setPasswordResp = Joi.object({
 })
 
 export interface IChangePasswordReq extends IAuthenticatedRequest {
+  params: {
+    userId: string
+  }
   body: {
-    username: number
     password: string
     newPassword: string
   }
 }
 
 export const changePasswordSchema: IRequestSchema = {
+  params: Joi.object({
+    userId: Joi.string().regex(objectIdRegex).required(),
+  }),
   body: Joi.object({
-    username: Joi.number().min(1000000000).max(9999999999).required(),
     password: Joi.string().min(6).max(16).required(),
     newPassword: Joi.string().min(6).max(16).required(),
   }),

@@ -42,7 +42,7 @@ export class LoginRepository {
     monthStartDate.setHours(0, 0, 0, 0)
 
     const payload = {
-      user: user._id.toHexString(),
+      userId: user._id.toHexString(),
       role: user.role
     }
     return {
@@ -147,9 +147,9 @@ export class LoginRepository {
     return setUserPassword
   }
 
-  async changePassword(contact: number, password: string, newPassword: string) {
+  async changePassword(userId:string, password: string, newPassword: string) {
     const getUser: any = await UserModel.findOne({
-      contact,
+      _id: userId,
       active: true,
     })
     if (!getUser) {
@@ -159,7 +159,7 @@ export class LoginRepository {
       throw new InvalidInput("password doesn't match")
     }
     return UserModel.updateOne(
-      { contact },
+      { _id: userId },
       { password: await genHash(newPassword, 10) },
       { new: true }
     )

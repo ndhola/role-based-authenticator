@@ -21,6 +21,7 @@ import {
 import { Response } from "express"
 import { inject } from "inversify"
 import { LoginRepository } from "../repository/Login.repository"
+import { authenticate } from "../middleware/auth"
 
 @controller("/api")
 export class LoginController {
@@ -122,9 +123,10 @@ export class LoginController {
   }
 
   @httpPost(
-    "/change/password",
+    "/change/password/:userId",
+    authenticate(undefined, true),
     validateReq(changePasswordSchema, {
-      apiPath: "/api/change/password",
+      apiPath: "/api/change/password/{userId}",
       tags: ["Login"],
       method: "post",
       responses: changePasswordResp,
@@ -132,7 +134,7 @@ export class LoginController {
   )
   async changePassword(req: IChangePasswordReq, res: Response) {
     const response = await this.LoginRepo.changePassword(
-      req.body.username,
+      req.params.userId,
       req.body.password,
       req.body.newPassword
     )
