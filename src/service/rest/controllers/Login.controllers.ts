@@ -28,7 +28,7 @@ export class LoginController {
   constructor(
     @inject(Types.LoginRepository)
     private LoginRepo: LoginRepository
-  ) { }
+  ) {}
 
   @httpPost(
     "/login",
@@ -40,12 +40,8 @@ export class LoginController {
     })
   )
   async login(req: ILoginReq, res: Response) {
-    const {
-      response,
-      accessToken,
-      username,
-      role,
-    } = await this.LoginRepo.login(req.body)
+    const { response, accessToken, username, role } =
+      await this.LoginRepo.login(req.body)
 
     res.json({
       status: 1,

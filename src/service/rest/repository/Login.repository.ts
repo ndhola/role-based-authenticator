@@ -5,6 +5,7 @@ import * as auth from "../middleware/auth"
 import { InvalidInput } from "../../../utilities/customError"
 import { genHash } from "../helpers/hash"
 import { IVerifyOTPReq, ILoginReq } from "../req.schema/login.schema"
+import { sendOTP } from "../../../utilities/mailgun-js"
 
 @injectable()
 export class LoginRepository {
@@ -43,7 +44,7 @@ export class LoginRepository {
 
     const payload = {
       userId: user._id.toHexString(),
-      role: user.role
+      role: user.role,
     }
     return {
       response: {
@@ -88,6 +89,12 @@ export class LoginRepository {
         new: true,
       }
     )
+
+    if (!getUser.email) throw new InvalidInput("User does not have email ID")
+
+    console.log("email", getUser.email)
+
+    return sendOTP(getOtp, getUser.email)
 
     // return sendMsg({
     //   message: `${getOtp} is the Onetime password(OTP) for your reset password. Pls do not share this with anyone.`,
@@ -147,7 +154,7 @@ export class LoginRepository {
     return setUserPassword
   }
 
-  async changePassword(userId:string, password: string, newPassword: string) {
+  async changePassword(userId: string, password: string, newPassword: string) {
     const getUser: any = await UserModel.findOne({
       _id: userId,
       active: true,
