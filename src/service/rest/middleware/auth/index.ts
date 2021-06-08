@@ -47,34 +47,35 @@ export const verify = (token: string) => {
   }
 }
 
-export const authenticate = (roles?: Roles[], isUserId?: boolean) => async (
-  req: IAuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const token = (req.get("authorization") || "").replace(/Bearer /, "")
-    console.log(token);
-    if (!token) {
-      throw new InvalidInput("Unauthorized access", 401)
-    }
-    console.log("after",token);
-    let decoded: any = await jwt.verify(token, publicKey, OPTIONS)
-    
-    if (roles && roles.indexOf(decoded.role) === -1) {
-      console.log("inside role",token);
-      throw new InvalidInput("Unauthorized access", 401)
-    }
+export const authenticate =
+  (roles?: Roles[], isUserId?: boolean) =>
+  async (req: IAuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const token = (req.get("authorization") || "").replace(/Bearer /, "")
+      console.log(token)
+      if (!token) {
+        throw new InvalidInput("Unauthorized access", 401)
+      }
+      console.log("after", token)
+      let decoded: any = await jwt.verify(token, publicKey, OPTIONS)
 
-    if (isUserId && decoded.userId !== req.params.userId) {
-      console.log("inside user",token);
-      throw new InvalidInput("Invalid User access", 401)
-    } 
-    next()
-  } catch (err) {
-    res.status(401).send({
-      status: 0,
-      message: "Unauthorized access",
-    })
+      if (roles && roles.indexOf(decoded.role) === -1) {
+        console.log("inside role", token)
+        throw new InvalidInput(
+          "Unauthorized access: This User does not have sufficient Permission",
+          401
+        )
+      }
+
+      if (isUserId && decoded.userId !== req.params.userId) {
+        console.log("inside user", decoded.userId, req.params)
+        throw new InvalidInput("Invalid User access", 401)
+      }
+      next()
+    } catch (err) {
+      res.status(401).send({
+        status: 0,
+        message: err ? err.toString() : "UnAuthorized Access",
+      })
+    }
   }
-}

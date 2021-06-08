@@ -71,4 +71,9 @@ export class UserRepository {
       return profile
     }
   }
+
+  async listUsers(filter: Object = {}) {
+    const users = await UserModel.find(filter)
+    return users
+  }
 }

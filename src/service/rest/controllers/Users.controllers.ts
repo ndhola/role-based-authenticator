@@ -13,9 +13,14 @@ import {
   registerUserResponseSchema,
   updateUserResp,
   IVerifyProviderSignUpRequest,
+  IListUsersSchema,
+  listUsersResp,
+  IListUsersRequest,
 } from "../req.schema/users.schema"
 import { Response } from "express"
 import { PROVIDER } from "../../../constants"
+import { authenticate } from "../middleware/auth"
+import { Roles } from "../../../db/models/user"
 
 @controller("/api/user")
 export class UserController {
@@ -74,6 +79,26 @@ export class UserController {
       status: 1,
       message: "User Verified",
       response: profile,
+    })
+  }
+
+  @httpPost(
+    "/list-users/:userId",
+    authenticate([Roles.A]),
+    validateReq(IListUsersSchema, {
+      apiPath: "/api/user/list-users/{userId}",
+      tags: ["User"],
+      method: "post",
+      responses: listUsersResp,
+      description: "List users based on filters",
+    })
+  )
+  async listUsers(req: IListUsersRequest, res: Response) {
+    const userList = await this.userRepo.listUsers(req.body.filter)
+    res.json({
+      status: 1,
+      message: "Users are fetched",
+      reponse: userList,
     })
   }
 }
