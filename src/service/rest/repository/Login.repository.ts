@@ -6,6 +6,8 @@ import { InvalidInput } from "../../../utilities/customError"
 import { genHash } from "../helpers/hash"
 import { IVerifyOTPReq, ILoginReq } from "../req.schema/login.schema"
 import { sendOTP } from "../../../utilities/mailgun-js"
+import { PROVIDER } from "../../../constants"
+import { verifyGoogleUser } from "../utility/providers"
 
 @injectable()
 export class LoginRepository {
@@ -56,6 +58,31 @@ export class LoginRepository {
     }
   }
 
+  async loginWithProvider(tokenId: string, provider: PROVIDER) {
+    if (provider === PROVIDER.GOOGLE) {
+      const { email } = await verifyGoogleUser(tokenId)
+      const user = await UserModel.findOne({
+        email: email,
+      })
+      if (!user) {
+        throw new InvalidInput("No User are registered with this email" + email)
+      }
+      const role = user.role
+      const payload = {
+        userId: user._id.toHexString(),
+        role: role,
+      }
+      return {
+        response: {
+          user,
+        },
+        accessToken: auth.sign(payload),
+        role,
+      }
+    }
+    throw new InvalidInput("No valid Input found")
+  }
+
   generateOPT() {
     const digits = "0123456789"
     let OTP = ""
@@ -64,6 +91,7 @@ export class LoginRepository {
     }
     return OTP
   }
+
   async forgotPassword(number: number) {
     const getUser = await UserModel.findOne({
       number,

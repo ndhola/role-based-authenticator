@@ -5,7 +5,7 @@ import {
   joi401Resp,
   joi400Resp,
 } from "../middleware/validate/joi.middleware"
-import user from "../../../db/models/user"
+import user, { Roles } from "../../../db/models/user"
 import { objectIdRegex } from "../../../constants"
 
 export interface ILoginReq extends IAuthenticatedRequest {
@@ -174,6 +174,30 @@ export const changePasswordResp = Joi.object({
       classTarget: "definitions",
     }),
     message: Joi.string().required(),
+  }),
+  "400": joi400Resp,
+  "401": joi401Resp,
+})
+
+export interface ILoginWithProvider extends IAuthenticatedRequest {
+  body: {
+    tokenId: string
+  }
+}
+
+export const loginWithProviderSchema: IRequestSchema = {
+  body: Joi.object({
+    tokenId: Joi.string().required(),
+  }),
+}
+
+export const loginWithProviderResp = Joi.object({
+  "200": Joi.object({
+    status: Joi.number().valid(1).required(),
+    message: Joi.string().required(),
+    response: Joi.object({}),
+    role: Roles,
+    accessToken: Joi.string().required(),
   }),
   "400": joi400Resp,
   "401": joi401Resp,

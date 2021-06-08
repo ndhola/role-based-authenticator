@@ -17,11 +17,15 @@ import {
   IChangePasswordReq,
   changePasswordSchema,
   changePasswordResp,
+  loginWithProviderSchema,
+  loginWithProviderResp,
+  ILoginWithProvider,
 } from "../req.schema/login.schema"
 import { Response } from "express"
 import { inject } from "inversify"
 import { LoginRepository } from "../repository/Login.repository"
 import { authenticate } from "../middleware/auth"
+import { PROVIDER } from "../../../constants"
 
 @controller("/api")
 export class LoginController {
@@ -138,6 +142,26 @@ export class LoginController {
       status: 1,
       response,
       message: "New password has been set successfully!",
+    })
+  }
+
+  @httpPost(
+    "/provider/login",
+    validateReq(loginWithProviderSchema, {
+      apiPath: "/api/provider/login",
+      tags: ["Login"],
+      method: "post",
+      responses: loginWithProviderResp,
+    })
+  )
+  async loginWithProvider(req: ILoginWithProvider, res: Response) {
+    const { response, role, accessToken } =
+      await this.LoginRepo.loginWithProvider(req.body.tokenId, PROVIDER.GOOGLE)
+    return res.json({
+      status: 1,
+      response,
+      accessToken,
+      role,
     })
   }
 }

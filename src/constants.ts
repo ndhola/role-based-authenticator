@@ -5,3 +5,7 @@ export const contactRegex = /^[1-9]{1}[0-9]{9}$/
 export const passwordRegex = /^[a-zA-Z0-9]{3,16}$/
 
 export const timezone = "Asia/Kolkata"
+export enum PROVIDER {
+    GOOGLE="google",
+    FACEBOOK="facebook"
+}

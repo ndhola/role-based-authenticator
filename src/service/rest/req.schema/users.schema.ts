@@ -65,3 +65,25 @@ export const updateUserResp = Joi.object({
     "400": joi400Resp,
     "401": joi401Resp,
 })
+
+export interface IVerifyProviderSignUpRequest extends IAuthenticatedRequest {
+    body: {
+        tokenId: string
+    }
+}
+
+export const IVerifyProviderSignUpSchema: IRequestSchema = {
+    body: Joi.object({
+        tokenId: Joi.string().required()
+    })
+}
+
+export const verifyProviderSignUpResp = Joi.object({
+    "200": Joi.object({
+        status: Joi.number().valid(1).required(),
+        message: Joi.string(),
+        response: Joi.object({}),
+    }),
+    "400": joi400Resp,
+    "401": joi401Resp,
+})
